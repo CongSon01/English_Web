@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <!--For cellphone users-->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!--description of this page-->
+    <meta name="description" content="English Learning Web Application">
+    <!--page title-->
+    <title>English Learning App</title>
+
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <!--CSS loading-->
+    <link rel="stylesheet" href="css/style.css">
+
+    <!---->
+    <meta name="robots" content="noindex, nofollow, noarchive">
+</head>
+
+<body>
+    <!-- Navigation Header -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
+        <div class="container">            <h1 class="navbar-brand mb-0">English Learning App</h1>
+              <div class="btbar ms-auto">
+                <button onclick="openCSVManager()" class="btn btn-outline-light me-2">
+                    <i class="bi bi-database-gear"></i> Manage Data
+                </button>
+                <button onclick="toggleTheme()" class="btn btn-outline-light me-2">
+                    <i class="bi bi-lightbulb"></i> Theme
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Progress Section -->
+    <div class="container mt-4">
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="card-title mb-0">Today's Progress</h4>
+                            <div class="progress-info">
+                                <span class="badge bg-primary fs-6" id="progressCounter">0/0</span>
+                            </div>
+                        </div>
+                        <div class="progress mt-3" style="height: 10px;">
+                            <div class="progress-bar bg-success" role="progressbar" 
+                                 style="width: 0%" id="progressBar"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Learning Section -->
+    <div class="container mt-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card shadow-lg">
+                    <div class="card-body p-5">                        <!-- Vietnamese Text Display -->
+                        <div class="text-center mb-4">
+                            <h3 class="text-primary mb-3" id="vietnameseText">Loading...</h3>
+                            <p class="text-muted mb-2" id="noteText"></p>
+                            <small class="text-muted mb-1" id="createdDate"></small>
+                              <!-- Status Display -->
+                            <div class="mt-3">
+                                <div class="d-flex justify-content-center align-items-center flex-wrap gap-2">
+                                    <span class="status-label me-2">Difficulty:</span>
+                                    <span class="badge status-badge" id="statusDisplay">Easy</span>
+                                    <div class="btn-group" role="group" id="statusSelector" style="display: none;">
+                                        <button type="button" class="btn btn-outline-success btn-sm" onclick="updateStatus('Easy')">Easy</button>
+                                        <button type="button" class="btn btn-outline-warning btn-sm" onclick="updateStatus('Medium')">Medium</button>
+                                        <button type="button" class="btn btn-outline-danger btn-sm" onclick="updateStatus('Hard')">Hard</button>
+                                    </div>
+                                    <button class="btn btn-link btn-sm p-0 ms-1" onclick="toggleStatusSelector()" id="statusEditBtn">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                </div>
+                                
+                                <!-- Learning Count Display -->
+                                <div class="mt-2">
+                                    <small class="text-muted">
+                                        <i class="bi bi-arrow-repeat"></i> Learning Count: 
+                                        <span class="badge bg-secondary" id="countDisplay">0</span>
+                                    </small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Image Display Button -->
+                        <div class="text-center mb-3">
+                            <button onclick="toggleImageDisplay()" class="btn btn-outline-secondary btn-sm" id="imageDisplayBtn">
+                                <i class="bi bi-image" id="imageToggleIcon"></i> Show Image
+                            </button>
+                        </div>
+
+                        <!-- Image Display -->
+                        <div class="text-center mb-4" id="imageContainer" style="display: none;">
+                            <img id="wordImage" class="img-fluid rounded shadow" 
+                                 style="max-height: 300px;" alt="Word illustration">
+                        </div>
+
+                        <!-- Input Section -->
+                        <div class="mb-4">
+                            <label for="userAnswer" class="form-label">Your Answer:</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control form-control-lg" 
+                                       id="userAnswer" placeholder="Type your English translation here..."
+                                       onkeypress="handleKeyPress(event)">                                <button class="btn btn-primary" onclick="handleCheckAnswer()">
+                                    <i class="bi bi-check-circle"></i> Check
+                                </button>
+                            </div>
+                            <div id="answerFeedback" class="mt-2"></div>
+                        </div>                        <!-- IPA Transcription Section -->
+                        <div class="text-center mb-3" id="ipaSection" style="display: none;">
+                            <div class="card bg-light">
+                                <div class="card-body py-2">
+                                    <small class="text-muted d-block mb-1">
+                                        <i class="bi bi-soundwave"></i> IPA Transcription:
+                                    </small>
+                                    <span class="ipa-transcription fw-bold text-primary" id="ipaTranscription"></span>
+                                    <button class="btn btn-outline-secondary btn-sm ms-2" onclick="toggleIpaDisplay()" id="ipaToggleBtn">
+                                        <i class="bi bi-eye-slash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Audio Section -->
+                        <div class="text-center mb-4">
+                            <button class="btn btn-outline-primary" onclick="speakEnglish()" id="speakBtn">
+                                <i class="bi bi-volume-up"></i> Listen to Pronunciation
+                            </button>
+                        </div><!-- Review Schedule Section -->
+                        <div id="reviewSection" class="mt-4" style="display: none;">
+                            <div class="card bg-light">
+                                <div class="card-body">
+                                    <h6 class="card-title">Schedule Next Review:</h6>
+                                    <div class="row">
+                                        <div class="col-md-8 mb-2">
+                                            <div class="btn-group flex-wrap" role="group">
+                                                <button class="btn btn-outline-success btn-sm" onclick="scheduleReview(1)">1 Day</button>
+                                                <button class="btn btn-outline-warning btn-sm" onclick="scheduleReview(2)">2 Days</button>
+                                                <button class="btn btn-outline-info btn-sm" onclick="scheduleReview(5)">5 Days</button>
+                                            </div>
+                                        </div>                                        <div class="col-md-4">
+                                            <div class="input-group input-group-sm">
+                                                <input type="number" class="form-control" id="customDays" 
+                                                       placeholder="Days" min="1" max="365" 
+                                                       onkeypress="handleCustomDaysKeyPress(event)">
+                                                <button class="btn btn-outline-primary" onclick="scheduleCustomReview()">Custom</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Navigation Buttons -->
+                        <div class="d-flex justify-content-between mt-4">
+                            <button class="btn btn-outline-secondary" onclick="previousWord()" id="prevBtn">
+                                <i class="bi bi-arrow-left"></i> Previous
+                            </button>                            <button class="btn btn-primary" onclick="handleNextWord()" id="nextBtn">
+                                Next <i class="bi bi-arrow-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>    <!-- Loading Modal -->
+    <div class="modal fade" id="loadingModal" tabindex="-1" data-bs-backdrop="static" data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-body text-center py-5">
+                    <div class="spinner-border text-primary mb-3" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <h5 id="loadingText">Loading your vocabulary...</h5>
+                    <small class="text-muted" id="loadingSubtext">Please wait while we prepare your learning session.</small>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Completion Table Modal -->
+    <div class="modal fade" id="completionModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-success text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-trophy"></i> Congratulations! Today's Learning Complete!
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <h4 class="text-success">🎉 Well Done!</h4>
+                        <p class="lead">You've completed all vocabulary words scheduled for today!</p>
+                    </div>
+                    
+                    <h6 class="mb-3">Today's Learning Summary:</h6>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">                            <thead class="table-dark">
+                                <tr>
+                                    <th>English Sentence</th>
+                                    <th>IPA Transcription</th>
+                                    <th>Vietnamese Translation</th>
+                                    <th class="text-center">Learning Count</th>
+                                </tr>
+                            </thead>
+                            <tbody id="completionTableBody">
+                                <!-- Table content will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <div class="alert alert-info">
+                            <i class="bi bi-calendar-check"></i> 
+                            Come back tomorrow for more vocabulary practice!
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-success" data-bs-dismiss="modal">
+                        <i class="bi bi-check-circle"></i> Close
+                    </button>
+                </div>
+            </div>
+        </div>    </div>
+
+    <!-- CSV Manager Modal -->
+    <div class="modal fade" id="csvManagerModal" tabindex="-1" data-bs-backdrop="static">
+        <div class="modal-dialog modal-fullscreen">
+            <div class="modal-content">                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-database-gear"></i> Vocabulary Data Manager
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body p-0">                    <!-- Data Manager Toolbar -->
+                    <div class="bg-light p-3 border-bottom">
+                        <div class="row align-items-center">
+                            <div class="col-md-8">
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-success" onclick="addNewWord()">
+                                        <i class="bi bi-plus-circle"></i> Add New Word
+                                    </button>
+                                    <button class="btn btn-info" onclick="downloadCSV()">
+                                        <i class="bi bi-download"></i> Download CSV
+                                    </button>
+                                    <button class="btn btn-warning" onclick="uploadCSV()">
+                                        <i class="bi bi-upload"></i> Upload CSV
+                                    </button>
+                                    <button class="btn btn-secondary" onclick="refreshCSVData()">
+                                        <i class="bi bi-arrow-clockwise"></i> Refresh from API
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="text" class="form-control" id="csvSearchInput" 
+                                       placeholder="Search words..." onkeyup="filterCSVTable()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- CSV Data Table -->
+                    <div class="table-responsive" style="height: calc(100vh - 200px); overflow-y: auto;">
+                        <table class="table table-striped table-hover table-sm mb-0">                            <thead class="table-dark sticky-top">
+                                <tr>
+                                    <th style="width: 5%">#</th>
+                                    <th style="width: 8%">Id</th>
+                                    <th style="width: 18%">Vietnamese</th>
+                                    <th style="width: 13%">Note</th>
+                                    <th style="width: 18%">English</th>
+                                    <th style="width: 10%">Created Date</th>
+                                    <th style="width: 10%">Next Date</th>
+                                    <th style="width: 7%">Status</th>
+                                    <th style="width: 5%">Count</th>
+                                    <th style="width: 6%">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="csvTableBody">
+                                <!-- Table content will be populated by JavaScript -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="d-flex justify-content-between w-100">
+                        <div>
+                            <span class="text-muted">Total words: <span id="csvWordCount">0</span></span>
+                        </div>                        <div>
+                            <button type="button" class="btn btn-success" onclick="saveCSVChanges()">
+                                <i class="bi bi-check-circle"></i> Save to API
+                            </button>
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                                <i class="bi bi-x-circle"></i> Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Word Editor Modal -->
+    <div class="modal fade" id="wordEditorModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="wordEditorTitle">
+                        <i class="bi bi-pencil-square"></i> Edit Word
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">                    <form id="wordEditorForm">
+                        <input type="hidden" id="editWordIndex" value="">
+                        <input type="hidden" id="editWordId" value="">
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editVietnamese" class="form-label">Vietnamese Translation <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="editVietnamese" rows="3" required></textarea>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editEnglish" class="form-label">English Text <span class="text-danger">*</span></label>
+                                <textarea class="form-control" id="editEnglish" rows="3" required></textarea>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editNote" class="form-label">Note/Context</label>
+                            <textarea class="form-control" id="editNote" rows="2"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editImageLink" class="form-label">Image URL</label>
+                                <input type="url" class="form-control" id="editImageLink">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editStatus" class="form-label">Difficulty Status</label>
+                                <select class="form-select" id="editStatus">
+                                    <option value="Easy">Easy</option>
+                                    <option value="Medium">Medium</option>
+                                    <option value="Hard">Hard</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label for="editCreatedDate" class="form-label">Created Date</label>
+                                <input type="date" class="form-control" id="editCreatedDate">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="editNextDate" class="form-label">Next Review Date</label>
+                                <input type="date" class="form-control" id="editNextDate">
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="editCount" class="form-label">Learning Count</label>
+                                <input type="number" class="form-control" id="editCount" min="0" value="0">
+                            </div>
+                        </div>
+                    </form>
+                </div>                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="button" class="btn btn-primary" onclick="handleSaveWordEdit()">
+                        <i class="bi bi-check-circle"></i> Save Word
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File Upload Modal -->
+    <div class="modal fade" id="fileUploadModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="bi bi-upload"></i> Upload CSV File
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="csvFileInput" class="form-label">Select CSV File</label>
+                        <input type="file" class="form-control" id="csvFileInput" accept=".csv" onchange="handleFileSelect(event)">                        <div class="form-text">
+                            Upload a CSV file with the following columns: Id, Vietnamese, Note, English, Image_link, Created_date, Next_date, Status, Count
+                        </div>
+                    </div>
+                    <div id="filePreview" class="mt-3" style="display: none;">
+                        <h6>File Preview (first 5 rows):</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-bordered">
+                                <thead id="previewTableHead"></thead>
+                                <tbody id="previewTableBody"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>                    <button type="button" class="btn btn-primary" id="confirmUploadBtn" onclick="confirmCSVUpload()" disabled>
+                        <i class="bi bi-upload"></i> Upload & Sync to API
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!--JavaScript loading-->
+    <script src="js/app_new.js"></script>
+</body>
+
+</html>

@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Direct API Test - No localStorage</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; max-width: 800px; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 3px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; max-height: 200px; }
+        .word-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h1>Direct API Test - Application Simulation</h1>
+    <p><strong>Testing Date: May 30, 2025</strong></p>
+    
+    <div>
+        <button onclick="testDirectAPI()">Test Direct API (No localStorage)</button>
+        <button onclick="clearLocalStorage()">Clear localStorage First</button>
+    </div>
+    
+    <div id="results"></div>
+
+    <script>
+        const SHEETBEST_API_URL = 'https://api.sheetbest.com/sheets/4e6412d1-956d-4f38-844a-7451bb94faa2';
+        
+        function addResult(message, type = 'info') {
+            const container = document.getElementById('results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `result ${type}`;
+            resultDiv.innerHTML = message;
+            container.appendChild(resultDiv);
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '';
+        }
+
+        function clearLocalStorage() {
+            localStorage.clear();
+            addResult('🗑️ All localStorage data cleared!', 'success');
+        }
+
+        // Simplified version of formatDateToDD_MM_YYYY from the app
+        function formatDateToDD_MM_YYYY(date) {
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+
+        // Direct API fetch simulation
+        async function testDirectAPI() {
+            clearResults();
+            addResult('🚀 Starting direct API test (bypassing localStorage)...', 'info');
+            
+            try {
+                // Step 1: Fetch from API directly
+                addResult('1️⃣ Fetching data from SheetBest API...', 'info');
+                const response = await fetch(SHEETBEST_API_URL, { 
+                    method: 'GET',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`API error! status: ${response.status}`);
+                }
+                
+                const data = await response.json();
+                addResult(`✅ API Response: ${data.length} records received`, 'success');
+                
+                // Step 2: Process data (like the app does)
+                addResult('2️⃣ Processing data...', 'info');
+                const processedData = data.map(item => ({
+                    Vietnamese: item.Vietnamese || '',
+                    Note: item.Note || '',
+                    English: item.English || '',
+                    Image_link: item.Image_link || '',
+                    Created_date: item.Created_date || '',
+                    Next_date: item.Next_date || '',
+                    Status: item.Status || 'Easy',
+                    Count: parseInt(item.Count) || 0
+                }));
+                
+                addResult(`✅ Data processed: ${processedData.length} words`, 'success');
+                
+                // Step 3: Filter for today (like the app does)
+                addResult('3️⃣ Filtering vocabulary for today...', 'info');
+                const today = new Date();
+                const todayString = formatDateToDD_MM_YYYY(today); // Should be "30/05/2025"
+                
+                addResult(`📅 Today's date: ${todayString}`, 'info');
+                
+                const filteredData = processedData.filter(word => {
+                    const nextDate = word.Next_date;
+                    const isToday = nextDate === todayString;
+                    const hasValidStatus = word.Status && ['Easy', 'Medium', 'Hard'].includes(word.Status);
+                    
+                    console.log(`Word: ${word.Vietnamese}, Next_date: ${nextDate}, Today: ${todayString}, IsToday: ${isToday}, Status: ${word.Status}, HasValidStatus: ${hasValidStatus}`);
+                    
+                    return isToday && hasValidStatus;
+                });
+                
+                addResult(`📊 Original data: ${processedData.length} words`, 'info');
+                addResult(`📅 Today's vocabulary: ${filteredData.length} words`, filteredData.length > 0 ? 'success' : 'error');
+                
+                if (filteredData.length > 0) {
+                    addResult('🎉 SUCCESS! The application would show words for today!', 'success');
+                    
+                    // Show the words
+                    filteredData.forEach((word, index) => {
+                        addResult(`
+                            <div class="word-card">
+                                <strong>Word ${index + 1}:</strong><br>
+                                <strong>Vietnamese:</strong> ${word.Vietnamese}<br>
+                                <strong>English:</strong> ${word.English}<br>
+                                <strong>Status:</strong> ${word.Status}<br>
+                                <strong>Next Date:</strong> ${word.Next_date}
+                            </div>
+                        `, 'info');
+                    });
+                    
+                } else {
+                    addResult('❌ No words for today found. App would show "No words for today" message.', 'error');
+                    
+                    // Debug: Show what dates are actually in the data
+                    const uniqueDates = [...new Set(processedData.map(w => w.Next_date))];
+                    addResult(`🔍 Dates found in data: ${uniqueDates.join(', ')}`, 'info');
+                    
+                    // Show sample of actual data
+                    if (processedData.length > 0) {
+                        addResult(`<pre>Sample data:\n${JSON.stringify(processedData[0], null, 2)}</pre>`, 'info');
+                    }
+                }
+                
+                // Step 4: Test if localStorage would be saved
+                addResult('4️⃣ Testing localStorage save...', 'info');
+                try {
+                    localStorage.setItem('vocabularyData', JSON.stringify(processedData));
+                    localStorage.setItem('lastSaveDate', new Date().toISOString());
+                    addResult('✅ Data would be saved to localStorage successfully', 'success');
+                } catch (saveError) {
+                    addResult(`❌ localStorage save would fail: ${saveError.message}`, 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ Test failed: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+
+        // Auto-run test on page load
+        window.addEventListener('load', () => {
+            addResult('📱 Page loaded. Ready to test!', 'info');
+            addResult('💡 Click "Test Direct API" to simulate the application flow without localStorage interference.', 'info');
+        });
+    </script>
+</body>
+</html>
